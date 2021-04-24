@@ -1,35 +1,34 @@
 package project.views;
 
 import project.controllers.Controller;
-import project.models.fractals.ModelledFractal;
 import project.models.Model;
+import project.models.fractals.ModelledFractal;
+import project.views.components.CustomActionButton;
+import project.views.components.behavior_buttons.ChangeFractalTypeButton;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
+import static project.views.PositioningConstants.*;
+
 public class Vue extends JFrame implements Observer {
-
-	public static ModelledFractal fractal;
-
-	JButton unZoomButton = new JButton("-");
-	JButton zoomButton = new JButton("+");
-	JButton newtonButton = new JButton("Newton");
-	JButton mandelbrotButton = new JButton("Mandelbrot");
-	JButton pythagorasButton = new JButton("Pythagore");
+	CustomActionButton unZoomButton;
+	CustomActionButton zoomButton;
+	ArrayList<ChangeFractalTypeButton> fractalChangeButtons = new ArrayList<>();
 
 	JButton callRefreshButton = new JButton("OK");
-
 	JLabel iterationsLabel = new JLabel("Iterations :");
-	JTextField setIterations = new JTextField();
-	
+	public JTextField setIterations = new JTextField();
+
 	JPanel buttonsPane = new JPanel();
 
-	private final Controller controller;
+	public final Controller controller;
 
 	BufferedImage bufferedImage;
 
@@ -40,9 +39,7 @@ public class Vue extends JFrame implements Observer {
 		this.setResizable(false);
 		this.controller = controller;
 
-		fractal = ModelledFractal.MANDELBROT;
-
-		bufferedImage = this.controller.model().modeledFractal();
+		bufferedImage = this.controller.model().modeledFractalImage();
 
 		initButtons();
 
@@ -56,56 +53,33 @@ public class Vue extends JFrame implements Observer {
 		buttonsPane.setLayout(null);
 		this.setLayout(null);
 
-		buttonsPane.setBounds(800, 0, 200, 800);
-		buttonsPane.setBackground(Color.gray);
+		buttonsPane.setBounds(0, 0, col(1.5), line(12));
 
-		buttonsPane.add(unZoomButton);
-		buttonsPane.add(zoomButton);
-		buttonsPane.add(newtonButton);
-		buttonsPane.add(mandelbrotButton);
-		buttonsPane.add(pythagorasButton);
+		int buttonsCount = 0;
+		for (ModelledFractal fractal : ModelledFractal.values()) {
+			fractalChangeButtons.add(new ChangeFractalTypeButton(this, buttonsPane, fractal.label,
+					col(0.25), line(0.25 + buttonsCount * 0.6), BUTTON_WIDTH, BUTTON_HEIGHT, fractal));
+			buttonsCount++;
+		}
+
+		this.unZoomButton = new CustomActionButton(buttonsPane, "-",
+				arg0 -> controller.zoom(0.5),
+				col(0.25), line(0.25 + buttonsCount * 0.6), BUTTON_WIDTH, BUTTON_HEIGHT);
+		buttonsCount++;
+
+		this.zoomButton =  new CustomActionButton(buttonsPane, "+",
+				arg0 -> controller.zoom(2),
+				col(0.25), line(0.25 + buttonsCount * 0.6), BUTTON_WIDTH, BUTTON_HEIGHT);
 
 		buttonsPane.add(iterationsLabel);
 		buttonsPane.add(setIterations);
 		buttonsPane.add(callRefreshButton);
-
-		unZoomButton.setBounds(10, 10, 180, 20);
-		zoomButton.setBounds(10, 40, 180, 20);
-		newtonButton.setBounds(10, 70, 180, 20);
-		mandelbrotButton.setBounds(10, 100, 180, 20);
-		pythagorasButton.setBounds(10, 130, 180, 20);
 
 		iterationsLabel.setBounds(10, 640, 200, 20);
 		setIterations.setBounds(10, 670, 120, 20);
 		setIterations.setText(Integer.toString(this.controller.getIterations()));
 		callRefreshButton.setBounds(135, 670, 55, 20);
 
-		this.add(buttonsPane);
-
-		unZoomButton.addActionListener(arg0 -> controller.zoom(0.5));
-
-		zoomButton.addActionListener(arg0 -> controller.zoom(2));
-
-		newtonButton.addActionListener(arg0 -> {
-			fractal = ModelledFractal.NEWTON;
-
-			controller.refresh();
-			setIterations.setText(Integer.toString(controller.getIterations()));
-		});
-
-		mandelbrotButton.addActionListener(arg0 -> {
-			fractal = ModelledFractal.MANDELBROT;
-
-			controller.refresh();
-			setIterations.setText(Integer.toString(controller.getIterations()));
-		});
-
-		pythagorasButton.addActionListener(arg0 -> {
-			fractal = ModelledFractal.PYTHAGORAS;
-
-			controller.refresh();
-			setIterations.setText(Integer.toString(controller.getIterations()));
-		});
 
 		callRefreshButton.addActionListener(arg0 -> {
 			try {
@@ -116,19 +90,22 @@ public class Vue extends JFrame implements Observer {
 				controller.updateIterations(Integer.parseInt(setIterations.getText()));
 			}
 		});
-		
+
+		this.add(buttonsPane);
 		new MouseEvents(this);
 	}
 
+
+
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		bufferedImage = this.controller.model().modeledFractal();
+		bufferedImage = this.controller.model().modeledFractalImage();
 		this.paint(this.getGraphics());
 	}
 
 	@Override
 	public void paint(Graphics g) {
-		g.drawImage(bufferedImage, 0, 0, this);
+		g.drawImage(bufferedImage, 610, 0, this);
 		buttonsPane.updateUI();
 	}
 

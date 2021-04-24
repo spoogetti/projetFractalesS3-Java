@@ -96,9 +96,9 @@ public class MandelbrotFractal extends JFrame implements iFractal {
 		}
 
 		public void run() {
-			for(int it = (i*(Model.viewWidth /nbThread)); it<(i+1)*(Model.viewWidth /nbThread); it++) { // handle 100 colons
-				for(int j = 0; j< Model.viewHeight; j++) {
-					image.setRGB(it, j, Color.getHSBColor(50, 100, colorPixel( it, j)).getRGB());
+			for(int x = (i * (Model.viewWidth / nbThread)); x<(i+1)*(Model.viewWidth /nbThread); x++) {
+				for(int y = 0; y < Model.viewHeight; y++) {
+					image.setRGB(x, y, Color.getHSBColor(50, 100, colorPixel(x, y)).getRGB());
 				}
 			}
 		}
